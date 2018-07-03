@@ -1,0 +1,22 @@
+{
+  "name": "VerizonRecruitmentSystem",
+  "version": "0.1.0",
+  "description": "VerizonRecruitmentSystem",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified! Configure in package.json\" && exit 1"
+  },
+  "repository": "",
+  "keywords": [
+    "node.js",
+    "eclipse",
+    "nodeclipse"
+  ],
+  "author": "",
+  "license": "MIT",
+  "readmeFilename": "README.md",
+  "dependencies": {
+    "express": "^4.16.3",
+    "mongodb": "^3.1.0"
+  }
+}
