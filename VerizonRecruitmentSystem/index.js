@@ -7,16 +7,109 @@ console.log('Server running at http://127.0.0.1:1337/');
  */
 var MongoClient = require('mongodb').MongoClient;
 var url = "mongodb://localhost:27017/";
-fetchData();
-function testServer(){
-	mongoose.connect(dbConfig.url)
-	.then(() => {
-	    console.log("Successfully connected to the database");    
-	}).catch(err => {
-	    console.log('Could not connect to the database. Exiting now...');
-	    process.exit();
+// createServer();
+// fetchData();
+var express = require('express');
+var bodyParser = require('body-parser');
+var jwt = require('jsonwebtoken');
+var bcrypt = require('bcryptjs');
+var app = express();
+app.use(bodyParser.json());
+// var fs = require("fs");
+
+var server = app.listen(8081, function () {
+
+	  var host = server.address().address
+	  var port = server.address().port
+
+	  console.log("Example app listening at http://%s:%s", host, port)
+
 	});
-}
+
+app.get('/listUsers', function (req, res) {
+	console.log("List of Users...");
+	MongoClient.connect(url, function(err, db) {
+		if (err)
+			throw err;
+		var dbo = db.db("reactathon");
+		dbo.collection("user").findOne(
+				{},
+				function(err, result) {
+					if (err)
+						throw err;
+					console.log(result.name + " - " + result.email + " - "
+							+ result.password);
+					res.send(result);
+					db.close();
+				});
+	});
+});
+
+app.get('/findUser/:id', function (req, res) {
+	console.log('Find User...'+req.params.id);
+	MongoClient.connect(url, function(err, db) {
+		if (err)
+			throw err;
+		var dbo = db.db("reactathon");
+		var query = {
+			name : req.params.id
+		};
+
+		dbo.collection("user").find(query).toArray(function(err, result) {
+			if (err)
+				throw err;
+			console.log(result);
+			res.send(result);
+			db.close();
+		});
+	});
+});
+
+app.post('/userLogin', function (req, res) {
+	console.log(req.body.email);
+	//var hashedPassword = bcrypt.hashSync(req.body.password, 8);
+	//console.log(hashedPassword);
+	MongoClient.connect(url, function(err, db) {
+		
+		if (err)
+			throw err;
+		var dbo = db.db("reactathon");
+		var query = {
+			email : req.body.email,
+			password : req.body.password
+		};
+		console.log(dbo.collection("user").find(query).count());
+		dbo.collection("user").find(query).toArray(function(err, result) {
+			console.log(result.affectedRows);
+			if (err)
+				throw err;
+			console.log(result);
+			res.send('Success');
+			db.close();
+		});
+	});
+});
+
+app.post('/addUser', function (req, res) {
+	
+	//var hashedPassword = bcrypt.hashSync(req.body.password, 8);
+	//req.body.password = hashedPassword;	
+	MongoClient.connect(url, function(err, db) {
+		if (err)
+			throw err;
+		var dbo = db.db("reactathon");
+		dbo.collection("user").insertOne(req.body, function(err, res) {
+			if (err)
+				throw err;
+			console.log("1 document inserted");			
+			// db.close();
+			// res.send(req.body);
+		});
+		res.send(req.body);
+	});
+	});
+
+
 
 function createServer(){
 	const express = require('express');
@@ -31,8 +124,7 @@ function createServer(){
 	    console.log("Server is listening on port 3000");
 	});
 }
-//var MongoClient = require('mongodb').MongoClient;
-//var url = "mongodb://localhost:27017/";
+
 
 function fetchData() {
 	MongoClient.connect(url, function(err, db) {
